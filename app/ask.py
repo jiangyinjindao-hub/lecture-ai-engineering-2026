@@ -11,6 +11,7 @@
 """
 
 import argparse
+import time
 
 from google import genai
 from google.genai import errors
@@ -23,10 +24,22 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
+    started_at = time.perf_counter()
     response = client.models.generate_content(model=MODEL, contents=question)
+    elapsed = time.perf_counter() - started_at
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    print(f"応答時間: {elapsed:.3f}秒")
+    print("--- トークン使用量 ---")
+    if response.usage_metadata:
+        print(f"入力トークン数 (Prompt): {response.usage_metadata.prompt_token_count}")
+        print(
+            f"出力トークン数 (Candidates): {response.usage_metadata.candidates_token_count}"
+        )
+        print(
+            f"合計トークン数 (Total): {response.usage_metadata.total_token_count}"
+        )
+    else:
+        print("トークン情報の取得に失敗しました。")
 
     return response.text
 
